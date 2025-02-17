@@ -37,6 +37,7 @@
 #include <cstring>
 #include <cstdio>
 #include <version>
+#include <thread>
 
 XTR_FUNC
 void xtr::detail::consumer::run(std::function<::timespec()>&& clock) noexcept
@@ -64,6 +65,10 @@ void xtr::detail::consumer::run(std::function<::timespec()>&& clock) noexcept
             // flush if no further data available (all sinks empty)
             if (flush_count != 0 && flush_count-- == 1)
                 buf.flush();
+            if (flush_count == 0) {
+                using namespace std::chrono_literals;
+                std::this_thread::sleep_for(100us);
+            }
             continue;
         }
 
