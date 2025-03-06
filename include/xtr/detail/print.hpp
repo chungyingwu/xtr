@@ -23,6 +23,7 @@
 
 #include "buffer.hpp"
 #include "xtr/log_level.hpp"
+#include "xtr/alerter.hpp"
 
 #include <fmt/format.h>
 
@@ -57,6 +58,11 @@ namespace xtr::detail
                 ts,
                 name,
                 args...);
+            
+                auto* alert = alerter::get_alerter();
+                if (alert && level <= log_level_t::critical) {
+                    alert->alert(buf.line);
+                }
 
             buf.append_line();
 #if __cpp_exceptions

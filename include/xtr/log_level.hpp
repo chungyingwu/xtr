@@ -29,7 +29,7 @@ namespace xtr
      * Passed to @ref XTR_LOGL, @ref XTR_LOGL_TSC etc to indicate the severity
      * of the log message.
      */
-    enum class log_level_t {none, fatal, error, warning, info, debug};
+    enum class log_level_t {none, fatal, critical, error, warning, info, debug};
 
     /**
      * Converts a string containing a log level name to the corresponding

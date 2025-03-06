@@ -24,6 +24,7 @@
 #define XTR_LOG_LEVELS  \
     X(none)             \
     X(fatal)            \
+    X(critical)         \
     X(error)            \
     X(warning)          \
     X(info)             \
@@ -47,6 +48,8 @@ const char* xtr::default_log_level_style(log_level_t level)
     {
     case log_level_t::fatal:
         return "F ";
+    case log_level_t::critical:
+        return "C ";
     case log_level_t::error:
         return "E ";
     case log_level_t::warning:
@@ -67,6 +70,8 @@ const char* xtr::systemd_log_level_style(log_level_t level)
     {
     case log_level_t::fatal:
         return "<0>"; // SD_EMERG
+    case log_level_t::critical:
+        return "<1>"; // SD_CRITICAL
     case log_level_t::error:
         return "<3>"; // SD_ERR
     case log_level_t::warning:

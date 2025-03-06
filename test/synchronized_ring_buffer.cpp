@@ -20,7 +20,7 @@
 
 #include "xtr/detail/synchronized_ring_buffer.hpp"
 
-#include <catch2/catch.hpp>
+#include "catch_amalgamated.hpp"
 
 #include <algorithm>
 #include <cstddef>

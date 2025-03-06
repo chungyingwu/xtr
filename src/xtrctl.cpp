@@ -56,7 +56,7 @@ namespace
             "\n"
             "  status [pattern]             Displays sink statuses\n"
             "  level <level> [pattern]      Sets sink log levels. Valid levels are;\n"
-            "                               fatal, error, warning, info, debug\n"
+            "                               fatal, critical, error, warning, info, debug\n"
             "  reopen                       Reopens the log file\n"
             "\n"
             "The pattern accepted by the status and level commands is by default a\n"
@@ -119,6 +119,7 @@ int main(int argc, char* argv[])
 
     std::map<std::string, xtr::log_level_t> levels_map{
         {"fatal", xtr::log_level_t::fatal},
+        {"critical", xtr::log_level_t::critical},
         {"error", xtr::log_level_t::error},
         {"warning", xtr::log_level_t::warning},
         {"info", xtr::log_level_t::info},

@@ -20,7 +20,7 @@
 
 #include "xtr/detail/align.hpp"
 
-#include <catch2/catch.hpp>
+#include "catch_amalgamated.hpp"
 
 namespace xtrd = xtr::detail;
 

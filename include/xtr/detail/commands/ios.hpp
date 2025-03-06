@@ -34,6 +34,8 @@ namespace xtr::detail
             return os << "none";
         case log_level_t::fatal:
             return os << "fatal";
+        case log_level_t::critical:
+            return os << "critical";
         case log_level_t::error:
             return os << "error";
         case log_level_t::warning:

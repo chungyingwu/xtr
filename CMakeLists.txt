@@ -9,6 +9,20 @@ option(INSTALL_DOCS "Install man pages" ON)
 option(ENABLE_EXCEPTIONS "Enable the use of exceptions" ON)
 option(ENABLE_LTO "Enable link-time optimisation" ON)
 
+include(FetchContent)
+FetchContent_Declare(
+  nlohmann_json
+  GIT_REPOSITORY https://github.com/nlohmann/json.git
+  GIT_TAG v3.11.2
+  GIT_SHALLOW TRUE
+  GIT_PROGRESS TRUE
+)
+
+include(FetchContent)
+FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
+                         GIT_TAG 1.11.2) # Replace with your desired version from: https://github.com/libcpr/cpr/releases
+FetchContent_MakeAvailable(cpr nlohmann_json)
+
 find_package(Threads REQUIRED)
 find_package(fmt REQUIRED)
 if (CMAKE_SYSTEM MATCHES "Linux")
@@ -72,7 +86,7 @@ add_library(${PROJECT_NAME} src/buffer.cpp
                             src/throw.cpp
                             src/tsc.cpp
                             src/wildcard_matcher.cpp)
-target_link_libraries(${PROJECT_NAME} fmt::fmt Threads::Threads)
+target_link_libraries(${PROJECT_NAME} fmt::fmt Threads::Threads cpr::cpr nlohmann_json::nlohmann_json)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_compile_definitions(${PROJECT_NAME} PRIVATE XTR_FUNC=)

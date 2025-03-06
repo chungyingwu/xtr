@@ -14,7 +14,8 @@ add_executable(${PROJECT_NAME}  align.cpp
                                 mirrored_memory_mapping.cpp
                                 pagesize.cpp
                                 synchronized_ring_buffer.cpp
-                                throw.cpp)
+                                throw.cpp
+                                catch_amalgamated.cpp)
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20)
 target_link_libraries(${PROJECT_NAME} ${CMAKE_PROJECT_NAME} Catch2::Catch2 dl)
 

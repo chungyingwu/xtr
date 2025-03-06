@@ -30,6 +30,7 @@
 #include "log_macros.hpp"
 #include "log_level.hpp"
 #include "sink.hpp"
+#include "alerter.hpp"
 
 #include <chrono>
 #include <cstdio>
@@ -131,13 +132,17 @@ public:
         const char* path,
         Clock&& clock = Clock(),
         std::string command_path = default_command_path(),
-        log_level_style_t level_style = default_log_level_style)
+        log_level_style_t level_style = default_log_level_style,
+        std::string alert_url = "",
+        std::string alert_name = "")
     :
         logger(
             make_fd_storage(path),
             std::forward<Clock>(clock),
             std::move(command_path),
-            level_style)
+            level_style,
+            alert_url,
+            alert_name)
     {
     }
 
@@ -171,13 +176,17 @@ public:
         FILE* stream = stderr,
         Clock&& clock = Clock(),
         std::string command_path = default_command_path(),
-        log_level_style_t level_style = default_log_level_style)
+        log_level_style_t level_style = default_log_level_style,
+        std::string alert_url = "",
+        std::string alert_name = "")
     :
         logger(
             make_fd_storage(stream, null_reopen_path),
             std::forward<Clock>(clock),
             std::move(command_path),
-            level_style)
+            level_style,
+            alert_url,
+            alert_name)
     {
     }
 
@@ -209,13 +218,17 @@ public:
         FILE* stream,
         Clock&& clock = Clock(),
         std::string command_path = default_command_path(),
-        log_level_style_t level_style = default_log_level_style)
+        log_level_style_t level_style = default_log_level_style,
+        std::string alert_url = "",
+        std::string alert_name = "")
     :
         logger(
             make_fd_storage(stream, std::move(reopen_path)),
             std::forward<Clock>(clock),
             std::move(command_path),
-            level_style)
+            level_style,
+            alert_url,
+            alert_name)
     {
     }
 
@@ -245,8 +258,15 @@ public:
         storage_interface_ptr storage,
         Clock&& clock = Clock(),
         std::string command_path = default_command_path(),
-        log_level_style_t level_style = default_log_level_style)
+        log_level_style_t level_style = default_log_level_style,
+        std::string alert_url = "",
+        std::string alert_name = "")
     {
+        // init alert if url is specified
+        if (!alert_url.empty()) {
+            alerter::create_alerter(alert_name, alert_url);
+        }
+
         // The consumer thread must be started after control_ has been
         // constructed
         consumer_ =

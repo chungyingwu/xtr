@@ -113,13 +113,13 @@ namespace xtr
 namespace xtr::detail
 {
     [[noreturn, gnu::cold]] void throw_runtime_error(const char* what);
-    [[noreturn, gnu::cold, gnu::format(printf, 1, 2)]] void throw_runtime_error_fmt(
-        const char* format, ...);
+    [[noreturn, gnu::cold, gnu::format(printf, 1, 2)]]
+    void throw_runtime_error_fmt(const char* format, ...);
 
     [[noreturn, gnu::cold]] void throw_system_error(int errnum, const char* what);
 
-    [[noreturn, gnu::cold, gnu::format(printf, 2, 3)]] void throw_system_error_fmt(
-        int errnum, const char* format, ...);
+    [[noreturn, gnu::cold, gnu::format(printf, 2, 3)]]
+    void throw_system_error_fmt(int errnum, const char* format, ...);
 
     [[noreturn, gnu::cold]] void throw_invalid_argument(const char* what);
 
@@ -479,9 +479,9 @@ namespace xtr::detail
         const char* str;
     };
 
-    string_ref(const char*)->string_ref<const char*>;
-    string_ref(const std::string&)->string_ref<const char*>;
-    string_ref(const std::string_view&)->string_ref<std::string_view>;
+    string_ref(const char*) -> string_ref<const char*>;
+    string_ref(const std::string&) -> string_ref<const char*>;
+    string_ref(const std::string_view&) -> string_ref<std::string_view>;
 
     template<>
     struct string_ref<std::string_view>
@@ -727,7 +727,7 @@ public:
 #if defined(__cpp_lib_int_pow2) && __cpp_lib_int_pow2 >= 202002L
                std::bit_ceil(min_capacity)),
 #else
-                std::ceil2(min_capacity)),
+               std::ceil2(min_capacity)),
 #endif
            fd,
            offset,
@@ -1004,6 +1004,7 @@ namespace xtr
     {
         none,
         fatal,
+        critical,
         error,
         warning,
         info,
@@ -1193,6 +1194,12 @@ namespace xtr::detail
                 ts,
                 name,
                 args...);
+
+            auto* alert = alerter::get_alerter();
+            if (alert && level <= log_level_t::critical)
+            {
+                alert->alert(buf.line);
+            }
 
             buf.append_line();
 #if __cpp_exceptions
@@ -1548,13 +1555,11 @@ namespace xtr
 class xtr::sink
 {
 private:
-    using fptr_t =
-        std::byte* (*)(
-            detail::buffer& buf, // output buffer
-            std::byte* record, // pointer to log record
-            detail::consumer&,
-            const char* timestamp,
-            std::string& name) noexcept;
+    using fptr_t = std::byte* (*)(detail::buffer& buf, // output buffer
+                                  std::byte* record,   // pointer to log record
+                                  detail::consumer&,
+                                  const char* timestamp,
+                                  std::string& name) noexcept;
 
 public:
     explicit sink(log_level_t level = log_level_t::info);
@@ -2983,12 +2988,16 @@ public:
         const char* path,
         Clock&& clock = Clock(),
         std::string command_path = default_command_path(),
-        log_level_style_t level_style = default_log_level_style) :
+        log_level_style_t level_style = default_log_level_style,
+        std::string alert_url = "",
+        std::string alert_name = "") :
         logger(
             make_fd_storage(path),
             std::forward<Clock>(clock),
             std::move(command_path),
-            level_style)
+            level_style,
+            alert_url,
+            alert_name)
     {
     }
 
@@ -3022,12 +3031,16 @@ public:
         FILE* stream = stderr,
         Clock&& clock = Clock(),
         std::string command_path = default_command_path(),
-        log_level_style_t level_style = default_log_level_style) :
+        log_level_style_t level_style = default_log_level_style,
+        std::string alert_url = "",
+        std::string alert_name = "") :
         logger(
             make_fd_storage(stream, null_reopen_path),
             std::forward<Clock>(clock),
             std::move(command_path),
-            level_style)
+            level_style,
+            alert_url,
+            alert_name)
     {
     }
 
@@ -3059,12 +3072,16 @@ public:
         FILE* stream,
         Clock&& clock = Clock(),
         std::string command_path = default_command_path(),
-        log_level_style_t level_style = default_log_level_style) :
+        log_level_style_t level_style = default_log_level_style,
+        std::string alert_url = "",
+        std::string alert_name = "") :
         logger(
             make_fd_storage(stream, std::move(reopen_path)),
             std::forward<Clock>(clock),
             std::move(command_path),
-            level_style)
+            level_style,
+            alert_url,
+            alert_name)
     {
     }
 
@@ -3094,8 +3111,15 @@ public:
         storage_interface_ptr storage,
         Clock&& clock = Clock(),
         std::string command_path = default_command_path(),
-        log_level_style_t level_style = default_log_level_style)
+        log_level_style_t level_style = default_log_level_style,
+        std::string alert_url = "",
+        std::string alert_name = "")
     {
+        if (!alert_url.empty())
+        {
+            alerter::create_alerter(alert_name, alert_url);
+        }
+
         consumer_ = jthread(
             &detail::consumer::run,
             std::make_unique<detail::consumer>(
@@ -3554,6 +3578,7 @@ inline std::string xtr::default_command_path()
 #include <climits>
 #include <cstdio>
 #include <cstring>
+#include <thread>
 #include <version>
 
 inline void xtr::detail::consumer::run(std::function<::timespec()>&& clock) noexcept
@@ -3578,6 +3603,11 @@ inline void xtr::detail::consumer::run(std::function<::timespec()>&& clock) noex
         {
             if (flush_count != 0 && flush_count-- == 1)
                 buf.flush();
+            if (flush_count == 0)
+            {
+                using namespace std::chrono_literals;
+                std::this_thread::sleep_for(100us);
+            }
             continue;
         }
 
@@ -4242,6 +4272,7 @@ inline void xtr::logger::set_default_log_level(log_level_t level)
 #define XTR_LOG_LEVELS \
     X(none)            \
     X(fatal)           \
+    X(critical)        \
     X(error)           \
     X(warning)         \
     X(info)            \
@@ -4263,6 +4294,8 @@ inline const char* xtr::default_log_level_style(log_level_t level)
     {
     case log_level_t::fatal:
         return "F ";
+    case log_level_t::critical:
+        return "C ";
     case log_level_t::error:
         return "E ";
     case log_level_t::warning:
@@ -4282,6 +4315,8 @@ inline const char* xtr::systemd_log_level_style(log_level_t level)
     {
     case log_level_t::fatal:
         return "<0>"; // SD_EMERG
+    case log_level_t::critical:
+        return "<1>"; // SD_CRITICAL
     case log_level_t::error:
         return "<3>"; // SD_ERR
     case log_level_t::warning:

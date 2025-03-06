@@ -20,7 +20,7 @@
 
 #include "xtr/detail/memory_mapping.hpp"
 
-#include <catch2/catch.hpp>
+#include "catch_amalgamated.hpp"
 
 #include <system_error>
 #include <utility>

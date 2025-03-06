@@ -26,7 +26,7 @@
 
 #include "command_client.hpp"
 
-#include <catch2/catch.hpp>
+#include "catch_amalgamated.hpp"
 
 #include <atomic>
 #include <string>
