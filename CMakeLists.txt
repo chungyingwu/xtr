@@ -85,8 +85,9 @@ add_library(${PROJECT_NAME} src/buffer.cpp
                             src/sink.cpp
                             src/throw.cpp
                             src/tsc.cpp
-                            src/wildcard_matcher.cpp)
-target_link_libraries(${PROJECT_NAME} fmt::fmt Threads::Threads cpr::cpr nlohmann_json::nlohmann_json)
+                            src/wildcard_matcher.cpp
+                            src/alerter.cpp)
+target_link_libraries(${PROJECT_NAME} fmt::fmt Threads::Threads nlohmann_json::nlohmann_json cpr)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_compile_definitions(${PROJECT_NAME} PRIVATE XTR_FUNC=)

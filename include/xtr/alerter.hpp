@@ -47,7 +47,7 @@ class alerter
 
     private:
     
-    inline static std::unique_ptr<alerter> alerter_;
+    static std::unique_ptr<alerter> alerter_;
     std::string alert_name_;
     std::string alert_url_;
     
